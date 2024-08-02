@@ -9,5 +9,5 @@ export class EmailConfirmationDto {
   @IsNotEmpty()
   @IsString()
   @Length(config.otpLength)
-  otp: string;
+  code: string;
 }

@@ -2,6 +2,7 @@ import { MessagePattern } from '@nestjs/microservices';
 import { Controller } from '@nestjs/common';
 import { EMessagePattern, ISendOtpEmailOptions } from '@repo/types';
 import { AppService } from './app.service';
+import { ISendMailOptions } from '@nestjs-modules/mailer';
 
 @Controller()
 export class AppController {
@@ -19,5 +20,10 @@ export class AppController {
       subject: 'One-time-code',
       context,
     });
+  }
+
+  @MessagePattern({ cmd: EMessagePattern.SEND_EMAIL })
+  async send(options: ISendMailOptions) {
+    return await this.appService.send(options);
   }
 }

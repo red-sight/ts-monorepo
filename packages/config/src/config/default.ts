@@ -12,6 +12,8 @@ const redisOptions = {
 export const defaultConfig: IConfig = {
   appName: "TS monorepo",
   appPrefixCode,
+  gatewayHost: "http://localhost/",
+  gatewayPort: 3033,
   expressPort: 3007,
   adminEmail: process.env["ADMIN_EMAIL"] as string,
   nestMicroserviceOptions: {

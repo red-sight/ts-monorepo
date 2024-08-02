@@ -2,8 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { ISendMailOptions, MailerService } from '@nestjs-modules/mailer';
 import { config } from '@repo/config';
 
-interface ISendOptions extends ISendMailOptions {}
-
 @Injectable()
 export class AppService {
   constructor(private readonly mailerService: MailerService) {}
@@ -25,7 +23,8 @@ export class AppService {
     }
   }
 
-  public async send({ ...mailerOptions }: ISendOptions) {
-    return await this.mailerService.sendMail(mailerOptions);
+  public async send(options: ISendMailOptions) {
+    console.log(options);
+    return await this.mailerService.sendMail(options);
   }
 }

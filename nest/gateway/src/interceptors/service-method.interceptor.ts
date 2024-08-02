@@ -5,11 +5,11 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { IServiceRequest } from '@repo/types';
 import { SERVICE_METHOD_KEY } from 'decorators/service-method.decorator';
 import { Request } from 'express';
-import { GateService } from 'gate.service';
+import { GateService } from 'services/gate.service';
 import { Observable, from, map, switchMap } from 'rxjs';
+import { serializeRequest } from 'utils/serialize-request';
 
 @Injectable()
 export class ServiceMethodInterceptor implements NestInterceptor {
@@ -26,7 +26,7 @@ export class ServiceMethodInterceptor implements NestInterceptor {
 
     return from(
       this.gateService.serviceMethodRequest(options.cmd, {
-        ...this.serializeRequest(request),
+        ...serializeRequest(request),
         user: request.user,
       }),
     ).pipe(switchMap((res) => next.handle().pipe(map(() => res))));
@@ -41,16 +41,5 @@ export class ServiceMethodInterceptor implements NestInterceptor {
       this.reflector.get(SERVICE_METHOD_KEY, classHandler);
 
     return serviceMethodOptions;
-  }
-
-  private serializeRequest(req: Request): IServiceRequest {
-    return {
-      method: req.method,
-      url: req.url,
-      headers: req.headers,
-      query: req.query,
-      params: req.params,
-      body: req.body,
-    };
   }
 }

@@ -38,4 +38,6 @@ html(lang="en")
     div(class="container")
       h1 Dear user,
       p To confirm your email address, please follow the link
-      a(href=link, target="_blank" class="button") Confirm
+      a(href=`${link}?token=${token}&code=${code}`, target="_blank" class="button") Confirm
+      
+      p The link is actual until #{expiresAt}. 

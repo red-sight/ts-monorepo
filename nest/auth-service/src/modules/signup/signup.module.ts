@@ -4,6 +4,7 @@ import { SignupService } from './signup.service';
 import { ClientsModule } from '@nestjs/microservices';
 import { config } from '@repo/config';
 import { PrismaService } from 'prisma.service';
+import { OtpService } from 'modules/otp/otp.service';
 
 @Module({
   imports: [
@@ -15,6 +16,6 @@ import { PrismaService } from 'prisma.service';
     ]),
   ],
   controllers: [SignupController],
-  providers: [SignupService, PrismaService],
+  providers: [SignupService, PrismaService, OtpService],
 })
 export class SignupModule {}

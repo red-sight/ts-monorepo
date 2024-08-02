@@ -16,8 +16,6 @@ export class SignupController {
 
   @MessagePattern({ cmd: EMessagePattern.EMAIL_CONFIRMATION })
   async emailConfirmation({ query }: EmailConfirmationAuthDto) {
-    const { token, otp } = query;
-    console.log(query);
-    return { token, otp };
+    return await this.signupService.verifyEmail(query);
   }
 }

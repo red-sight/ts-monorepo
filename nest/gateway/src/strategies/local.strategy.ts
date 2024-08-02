@@ -3,7 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
 import { VerifyCallback } from 'passport-google-oauth20';
 import { EMessagePattern, ERole, IUserSessionData } from '@repo/types';
-import { GateService } from 'gate.service';
+import { GateService } from 'services/gate.service';
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
@@ -26,6 +26,8 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
       EMessagePattern.SIGNIN_LOCAL,
       { body: { email, password } },
     );
+
+    console.log('USER', user);
 
     const userSessionData: IUserSessionData = {
       id: user.id,

@@ -21,4 +21,8 @@ export class AuthController {
   @Get('/confirm/email')
   @ServiceMethod(EMessagePattern.EMAIL_CONFIRMATION)
   async emailConfirmation() {}
+
+  @Get('/otp/resend')
+  @ServiceMethod(EMessagePattern.OTP_RESEND)
+  async otpResend() {}
 }

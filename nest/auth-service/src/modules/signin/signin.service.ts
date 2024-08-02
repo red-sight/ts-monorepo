@@ -26,5 +26,7 @@ export class SigninService {
     const passwordMatched = passwordInstance.verify(localAuth.password);
     if (!passwordMatched)
       throw new RpcException({ statusCode: 403, message: 'Unauthorized' });
+
+    return localAuth.authMethod.profile;
   }
 }

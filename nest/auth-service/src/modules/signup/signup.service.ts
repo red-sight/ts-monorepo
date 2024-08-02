@@ -1,17 +1,17 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { ClientProxy, RpcException } from '@nestjs/microservices';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { RpcException } from '@nestjs/microservices';
 import { config } from '@repo/config';
 import { SignupLocalDto } from '@repo/dtos';
-import { EMessagePattern, ERole } from '@repo/types';
+import { EOtpChannelName, ERole, ETemplateCode } from '@repo/types';
+import { OtpService } from 'modules/otp/otp.service';
 import { PrismaService } from 'prisma.service';
-import { lastValueFrom, timeout } from 'rxjs';
 import { Password } from 'utils/Password';
 
 @Injectable()
 export class SignupService {
   constructor(
-    @Inject('MAILSERVICE') private mailServiceClient: ClientProxy,
     private prisma: PrismaService,
+    private otpService: OtpService,
   ) {}
 
   async signupLocal({ email, password }: SignupLocalDto) {
@@ -26,7 +26,7 @@ export class SignupService {
       });
 
     const passwordInstance = new Password({ password });
-    await this.prisma.$transaction(async (tx) => {
+    return await this.prisma.$transaction(async (tx) => {
       await tx.profile.create({
         data: {
           roleName: ERole.CUSTOMER,
@@ -52,46 +52,38 @@ export class SignupService {
           },
         },
       });
-      await lastValueFrom(
-        this.mailServiceClient
-          .send({ cmd: EMessagePattern.SEND_EMAIL_CONFIRMATION }, email)
-          .pipe(timeout(config.serviceMethodTimeout)),
-      );
+      const link = new URL('/auth/confirm/email', config.gatewayHost);
+      link.port = config.gatewayPort.toString();
+      const otpData = await this.otpService.send({
+        to: email,
+        channel: EOtpChannelName.EMAIL,
+        data: { email },
+        template: ETemplateCode.VERIFY_EMAIL,
+        ttl: 1000 * 60 * 60 * 24 * 7,
+        templateContext: {
+          link,
+        },
+      });
+      return {
+        message:
+          'Email confirmation is required. Please follow the link in your inbox.',
+        ...otpData,
+      };
     });
+  }
 
-    // const existingUser = await this.prisma.user.findUnique({
-    //   where: { email },
-    // });
-    // if (existingUser)
-    //   throw new RpcException({
-    //     statusCode: 400,
-    //     message: 'The user is already registered',
-    //   });
-    // const passwordInstance = new Password({ password });
-
-    // const createdUser = await this.prisma.$transaction(async (tx) => {
-    //   const user = await tx.user.create({
-    //     data: {
-    //       email,
-    //       password: passwordInstance.hash,
-    //       salt: passwordInstance.salt,
-    //       roleName: ERole.CUSTOMER,
-    //     },
-    //     include: {
-    //       Role: {
-    //         include: {
-    //           Permissions: true,
-    //         },
-    //       },
-    //     },
-    //   });
-    //   await firstValueFrom(
-    //     this.mailServiceClient
-    //       .send({ cmd: EMessagePattern.SEND_EMAIL_CONFIRMATION }, email)
-    //       .pipe(timeout(5000)),
-    //   );
-    //   return user;
-    // });
-    // return createdUser;
+  async verifyEmail(opts: { token: string; code: string }) {
+    const { email } = await this.otpService.verify(opts);
+    const localAuth = await this.prisma.localAuth.findUnique({
+      where: { email },
+    });
+    if (!localAuth) throw new BadRequestException('Email not found');
+    await this.prisma.authMethod.update({
+      where: { id: localAuth.authMethodId },
+      data: { isConfirmed: true },
+    });
+    return {
+      message: 'Email is confirmed successfully',
+    };
   }
 }

@@ -9,6 +9,8 @@ import { _StrategyOptionsBase } from "passport-google-oauth20";
 
 export interface IConfig {
   appName: string;
+  gatewayHost: string;
+  gatewayPort: number;
   appPrefixCode: string;
   expressPort: number;
   nestMicroserviceOptions: MicroserviceOptions;

@@ -1,11 +1,11 @@
-import { IncomingHttpHeaders } from 'http';
-import { ParsedQs } from 'qs';
+import { IncomingHttpHeaders } from "http";
+import { ParsedQs } from "qs";
 
 export enum EOtpChannelName {
-  EMAIL = 'email',
-  SMS = 'sms',
-  TOTP = 'totp',
-  WEBAUTHN = 'webauthn',
+  EMAIL = "email",
+  SMS = "sms",
+  TOTP = "totp",
+  WEBAUTHN = "webauthn"
 }
 
 export interface IAvailableOtpChannel {
@@ -26,4 +26,38 @@ export interface IOtpOptions {
   token?: string;
   otpSessionTTL?: number;
   availableChannels: IAvailableOtpChannel[];
+}
+
+export interface ISendOtpAuthServiceOptions {
+  channel: EOtpChannelName;
+  subject?: string;
+  template?: string;
+  templateContext?: any;
+  to: string;
+  ttl?: number;
+  resendBlockTtl?: number;
+  data: any;
+}
+
+export interface IOtpVerifyOptions {
+  token: string;
+  code: string;
+}
+
+export interface IOTPStore
+  extends Pick<
+    ISendOtpAuthServiceOptions,
+    | "subject"
+    | "template"
+    | "templateContext"
+    | "ttl"
+    | "resendBlockTtl"
+    | "data"
+  > {
+  code?: string;
+}
+
+export interface IOtpResend
+  extends Pick<ISendOtpAuthServiceOptions, "channel" | "to"> {
+  token: string;
 }
